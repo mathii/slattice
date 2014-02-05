@@ -182,6 +182,7 @@ wfhmm.lattice.transmission <- function(f.from, f.to, t, params){
 
   mu <- (1-mrm[i,j]*params$M)*f.from+2*params$s[i,j]*f.from*(1-f.from)*(f.from+h*(1-2*f.from))
   sig <- f.from*(1-f.from)/params$Ne
+
   if(i<k){
     f.add <- f.previous[i+1,j]
     if(is.na(f.add)){f.add <- f.from+2*params$s[i,j]}

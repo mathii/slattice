@@ -15,14 +15,25 @@
 ########################################################################################################
 
 ## Helper functions for the lattice model
+.mrm.store <- list()
 
 ## Migration rates for grid size k
 mig.rate.mat <- function(k){
+  if(!is.null(.mrm.store[[as.character(k)]])){
+      return(.mrm.store[[as.character(k)]])
+  }
+
+
   mrm <- matrix(4, ncol=k, nrow=k)
   mrm[1,] <- mrm[1,]-1
   mrm[k,] <- mrm[k,]-1
   mrm[,1] <- mrm[,1]-1
   mrm[,k] <- mrm[,k]-1
+
+  tmp <- .mrm.store
+  tmp[[as.character(k)]] <- mrm
+  assign(".mrm.store", tmp, .GlobalEnv)
+  
   return(mrm)
 }
 

@@ -306,9 +306,7 @@ wfhmm.conditional.expectation <- function(call, i, t){
   states <- params$states
 
   probs <- fwd[i,t]*tf(states[i], states, t, params)*bwd[,t+1]/fb[i,t]
-  for(j in 1:length(states)){
-    probs[j]=probs[j]*ef(params$obs$N.A[t+1], params$obs$N[t+1], states[j])
-  }
+  probs <- probs*ef(params$obs$N.A[t+1], params$obs$N[t+1], states)
   probs <- probs/sum(probs)             
   return(sum(probs*states))
 }
