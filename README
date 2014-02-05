@@ -1,0 +1,43 @@
+########################################################################################################
+##    Copyright 2012 Iain Mathieson
+
+##    Licensed under the Apache License, Version 2.0 (the "License");
+##    you may not use this file except in compliance with the License.
+##    You may obtain a copy of the License at
+
+##        http://www.apache.org/licenses/LICENSE-2.0
+
+##    Unless required by applicable law or agreed to in writing, software
+##    distributed under the License is distributed on an "AS IS" BASIS,
+##    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+##    See the License for the specific language governing permissions and
+##    limitations under the License.
+########################################################################################################
+
+This code implements the selection coefficient estimators described in "Estimating selection coefficients in spatially structured populations from time series data in spatially structured populations" - Mathieson & McVean; Genetics 2013. You are free to use and modify the code. Some of the code in these files is experimental and may not be fully tested. If you are interested in developing this code further, or turning it into a proper package, I would be delighted to work further with you. I can be contacted at iain.mathieson@well.ox.ac.uk. 
+
+All the code runs in R, and was developed and tested on R version 2.15.1.
+
+The files in this directory are described below. Most of the libraries are in two parts; xxx.R containing code for the single popuation case and xxx_lattice.R which depends on xxx.R and contains code for the lattice population: 
+
+> examples.R
+Run this to show a few simple examples of the estimators and to see what the format of the data should be. 
+From the R prompt: source("examples.R")
+
+> include.R
+Just source()'s all the files in the directory, to load all the functions into memory
+
+> inference.R and inference_lattice.R 
+Wrapper functions to manage the actual inference, and MLEs for the case of complete observations
+
+> simulation.R and simulation_lattice.R
+Code to run simple simulations under the WF (lattice) model. 
+
+> plotting.R and plotting_lattice.R
+Make various plots of allele frequencies etc. 
+
+> wfhmm.R and wfhmm_lattice.R
+Implement the HMMs described in the paper, with generic emission and transition densities. 
+
+- INM 18Dec12
+
