@@ -121,12 +121,15 @@ wfhmm.forward <- function(states, observations, emission.func, transition.func, 
   n.states <- length(states)
   n.obs <- length(observations)
 
+  N.A <- params$obs$N.A
+  N <- params$obs$N
+  
   f.mat <- matrix(0, nrow=n.states, ncol=n.obs)
   scaling.factor <- rep(0,n.obs)
   f.mat[,1] <- 1/n.states
 
   for(i in 1:n.states){
-    f.mat[i,1] <- emission.func(params$obs$N.A[1], params$obs$N[1], states[i])*f.mat[i,1]
+    f.mat[i,1] <- emission.func(N.A[1], N[1], states[i])*f.mat[i,1]
   }
   scaling.factor[1] <- sum(f.mat[,1])
   f.mat[,1] <- f.mat[,1]/scaling.factor[1]
@@ -134,7 +137,7 @@ wfhmm.forward <- function(states, observations, emission.func, transition.func, 
   for(j in 2:n.obs){
     for(i in 1:n.states){
       this.args <- f.mat[,j-1] * transition.func(states, states[i], j-1, params)
-      this.elem <- emission.func(params$obs$N.A[j], params$obs$N[j], states[i])*sum(this.args)
+      this.elem <- emission.func(N.A[j], N[j], states[i])*sum(this.args)
       f.mat[i,j] <- this.elem
     }
     scaling.factor[j] <- sum(f.mat[,j])
@@ -150,15 +153,16 @@ wfhmm.backwards <- function(states, observations, emission.func, transition.func
   n.obs <- length(observations)
   n.states <- length(states)
   if(all(is.null(scaling.factor))){scaling.factor <- rep(1,n.obs)}
+
+  N.A <- params$obs$N.A
+  N <- params$obs$N
   
   b.mat <- matrix(0, nrow=n.states, ncol=n.obs)
   b.mat[,n.obs] <- 1
   for(j in rev(1:(n.obs-1))){
+    this.em <- emission.func(N.A[j+1], N[j+1], states)
     for(i in 1:n.states){
-      this.args <- b.mat[,j+1] * transition.func(states[i], states, j, params)
-      for(l in 1:n.states){
-        this.args[l] <- this.args[l]*emission.func(params$obs$N.A[j+1], params$obs$N[j+1], states[l])
-      }
+      this.args <- b.mat[,j+1] * transition.func(states[i], states, j, params) * this.em
       b.mat[i,j] <- sum(this.args)/scaling.factor[j+1]
     }
   }
@@ -203,7 +207,7 @@ wfhmm.simulate <- function( states, fwd, emission.func, transition.func, params)
 ## of seeing N.A out of N observations 
 
 wfhmm.emission <- function( N.A, N, f){
-  return(dbinom(N.A, N, f))
+    return(dbinom(N.A, N, f))
 }
 
 ## Normal approximation to the Binomial transition func, conditional on s and Ne
