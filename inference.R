@@ -234,7 +234,7 @@ s.estimate.soft.em <-  function( obs, Ne, h=0.5, tol=0.001, max.iters=100, verbo
     iter <- iter+1
   }
 
-  return(list(s=s, posterior=call$fb$fb.mat, iterations=iter-1, iter.values=iter.values))
+  return(list(s=s, posterior=call$fb$fb.mat, iterations=iter-1, iter.values=iter.values, call=call))
 }
 
 ## stochastic EM estimator for s - start with an estimate of s,
