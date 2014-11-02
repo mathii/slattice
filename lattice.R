@@ -18,20 +18,21 @@
 .mrm.store <- list()
 
 ## Migration rates for grid size k
-mig.rate.mat <- function(k){
-  if(!is.null(.mrm.store[[as.character(k)]])){
-      return(.mrm.store[[as.character(k)]])
+mig.rate.mat <- function(k1, k2=k1){
+  tag <- paste0(as.character(k1),",",as.character(k2))
+  if(!is.null(.mrm.store[[tag]])){
+      return(.mrm.store[[tag]])
   }
 
 
-  mrm <- matrix(4, ncol=k, nrow=k)
+  mrm <- matrix(4, nrow=k1, ncol=k2)
   mrm[1,] <- mrm[1,]-1
-  mrm[k,] <- mrm[k,]-1
+  mrm[k1,] <- mrm[k1,]-1
   mrm[,1] <- mrm[,1]-1
-  mrm[,k] <- mrm[,k]-1
+  mrm[,k2] <- mrm[,k2]-1
 
   tmp <- .mrm.store
-  tmp[[as.character(k)]] <- mrm
+  tmp[[tag]] <- mrm
   assign(".mrm.store", tmp, .GlobalEnv)
   
   return(mrm)
@@ -41,11 +42,12 @@ mig.rate.mat <- function(k){
 
 interpolate.f <- function(obs){
   f <- obs$N.A/obs$N
-  k <- dim(f)[1]
+  k1 <- dim(f)[1]
+  k2 <- dim(f)[2]
   g <- dim(f)[3]
   ## Linearly interpolate missing values. - Add: Interpolate in space as well as time.  
-  for(i in 1:k){
-    for(j in 1:k){
+  for(i in 1:k1){
+    for(j in 1:k2){
       if(sum(!is.na(f[i,j,]))==0){
         f[i,j,] <- 0.5
       }
