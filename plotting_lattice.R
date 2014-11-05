@@ -23,9 +23,10 @@ source("inference_lattice.R")
 ## Make a cute plot of the allele frequencies for the WF lattice model
 
 plot.wright.fisher.lattice.afs <- function(n, f, s=0, scale=c(-0.1,0.1), ...){
-  k=dim(f)[1]
+  k1=dim(f)[1]
+  k2=dim(f)[2]
   g=dim(f)[3]
-  if(!is.matrix(s)==1){s=matrix(s, nrow=k, ncol=k)}
+  if(!is.matrix(s)==1){s=matrix(s, nrow=k1, ncol=k2)}
 
   pal<-brewer.pal(11, "RdYlGn")
   pal.seq <- seq(-0.1,0.1,length.out=11+1)
@@ -33,17 +34,17 @@ plot.wright.fisher.lattice.afs <- function(n, f, s=0, scale=c(-0.1,0.1), ...){
   ## draw grid
   plot(0,0, col="white", xlim=c(0,1), ylim=c(-0.16,1), xlab="", ylab="", xaxt="n", yaxt="n", bty="n", ...)
 
-  for(i in 1:k){
-    for(j in 1:k){
-      rect((j-1)/k, (1-i/k), j/k, (1-(i-1)/k), col=pal[findInterval(s[i,j], pal.seq, all.inside=TRUE)])
+  for(i in 1:k1){
+    for(j in 1:k2){
+      rect((j-1)/k2, (1-i/k1), j/k2, (1-(i-1)/k1), col=pal[findInterval(s[i,j], pal.seq, all.inside=TRUE)])
     }
   }
   
-  for(i in 1:k){
-    for(j in 1:k){
+  for(i in 1:k1){
+    for(j in 1:k2){
       slice=f[i,j,]
-      xpos=(j-1)/k+(0:(g-1))/((g-1)*k)
-      ypos=(1-i/k)+slice/k
+      xpos=(j-1)/k2+(0:(g-1))/((g-1)*k2)
+      ypos=(1-i/k1)+slice/k1
       lines(xpos, ypos, col= "black", lwd=2, type="s")
     }
   }
@@ -59,25 +60,26 @@ plot.wright.fisher.lattice.afs <- function(n, f, s=0, scale=c(-0.1,0.1), ...){
 ## if m is specified, use that, else find the MLE of
 ## m as well. 
 plot.lattice.likelihoods <- function(fr, N, m=NULL, true.s=NULL, true.m=NULL, extend=0.1, grid=100, ... ){
-  k <- dim(fr)[1]
-  if(!is.matrix(true.s)){true.s <- matrix(true.s,k,k)}
+  k1 <- dim(fr)[1]
+  k2 <- dim(fr)[2]
+  if(!is.matrix(true.s)){true.s <- matrix(true.s,k1,k2)}
   
   pal<-brewer.pal(11, "RdYlGn")
   pal.seq <- seq(-0.1,0.1,length.out=11+1)
 
   cat("Finding MLE\n\n")
   if(is.null(m)){
-    full.result <- optim(c(rep(0,k*k),0.01*N), s.m.lattice.likelihood.vector, N=N, fr=fr, method="BFGS")
+    full.result <- optim(c(rep(0,k1*k2),0.01*N), s.m.lattice.likelihood.vector, N=N, fr=fr, method="BFGS")
     result <- full.result$par
     maximised.l <- -full.result$value
-    s.hat <- matrix(result[1:(k*k)], nrow=k, byrow=TRUE)
-    m.hat <- result[k*k+1]
+    s.hat <- matrix(result[1:(k1*k2)], nrow=k1, byrow=TRUE)
+    m.hat <- result[k1*k2+1]
   }
   else{
-    full.result <- optim(rep(0,k*k), s.lattice.likelihood.vector, m=m, N=N, fr=fr, method="BFGS")
+    full.result <- optim(rep(0,k1*k2), s.lattice.likelihood.vector, m=m, N=N, fr=fr, method="BFGS")
     result <- full.result$par
     maximised.l <- -full.result$value
-    s.hat <- matrix(result, nrow=k, byrow=TRUE)
+    s.hat <- matrix(result, nrow=k1, byrow=TRUE)
     m.hat <- m
   }
   approx.s.hat <- approx.lattice.s.hat(fr, m.hat/N)
@@ -94,9 +96,9 @@ plot.lattice.likelihoods <- function(fr, N, m=NULL, true.s=NULL, true.m=NULL, ex
   s.max <- max(c(max(true.s),max(s.hat),min(approx.s.hat)))+extend*(max(s.hat)-min(s.hat))
   s.x <- seq(s.min, s.max, length.out=grid)
   
-  ll <- array(0, c(k,k,grid) )
-  for(i in 1:k){
-    for(j in 1:k){
+  ll <- array(0, c(k1,k2,grid) )
+  for(i in 1:k1){
+    for(j in 1:k2){
       for(l in 1:grid){
         s.tmp <- s.hat
         s.tmp[i,j] <- s.x[l]
@@ -108,36 +110,36 @@ plot.lattice.likelihoods <- function(fr, N, m=NULL, true.s=NULL, true.m=NULL, ex
   l.max <- max(ll)+extend*(max(ll)-min(ll))
   l.min <- min(ll)-extend*(max(ll)-min(ll))
 
-  xpos <- (s.x-s.min)/(s.max-s.min)/k
-  ypos <- (ll-l.min)/(l.max-l.min)/k
+  xpos <- (s.x-s.min)/(s.max-s.min)/k2
+  ypos <- (ll-l.min)/(l.max-l.min)/k1
   
   ## draw grid
   plot(0,0, col="white", xlim=c(0,1), ylim=c(-0.16,1), xlab="", ylab="", xaxt="n", yaxt="n", bty="n", ...)
   
-  for(i in 1:k){
-    for(j in 1:k){
-      rect((j-1)/k, (1-i/k), j/k, (1-(i-1)/k))
+  for(i in 1:k1){
+    for(j in 1:k2){
+      rect((j-1)/k2, (1-i/k1), j/k2, (1-(i-1)/k1))
 
       ## This will go wrong if the ci is not a single interval.
       ci <- (maximised.l-ll[i,j,]<1.92)
-      lines(xpos+(j-1)/k, ypos[i,j,]+(1-i/k), col="#377EBA", lwd=2)
-      lines(xpos[ci]+(j-1)/k, ypos[i,j,ci]+(1-i/k), col="#E41A1C", lwd=2)
+      lines(xpos+(j-1)/k2, ypos[i,j,]+(1-i/k1), col="#377EBA", lwd=2)
+      lines(xpos[ci]+(j-1)/k2, ypos[i,j,ci]+(1-i/k1), col="#E41A1C", lwd=2)
       
       if(!all(is.null(true.s))){
 ##         real.col <- pal[findInterval(true.s[i,j], pal.seq, all.inside=TRUE)]
         real.col <- "#4D8F4A"
-        lines(rep((j-1)/k+(true.s[i,j]-s.min)/(s.max-s.min)/k,2), c(1-i/k, 1-(i-1)/k), col=real.col, lty=2)
+        lines(rep((j-1)/k2+(true.s[i,j]-s.min)/(s.max-s.min)/k2,2), c(1-i/k1, 1-(i-1)/k1), col=real.col, lty=2)
       }
-      lines(rep((j-1)/k+(s.hat[i,j]-s.min)/(s.max-s.min)/k,2), c(1-i/k, 1-(i-1)/k), col="blue", lty=2)
-      lines(rep((j-1)/k+(approx.s.hat[i,j]-s.min)/(s.max-s.min)/k,2), c(1-i/k, 1-(i-1)/k), col="#E41A1C", lty=2)
+      lines(rep((j-1)/k2+(s.hat[i,j]-s.min)/(s.max-s.min)/k2,2), c(1-i/k1, 1-(i-1)/k1), col="blue", lty=2)
+      lines(rep((j-1)/k2+(approx.s.hat[i,j]-s.min)/(s.max-s.min)/k2,2), c(1-i/k1, 1-(i-1)/k1), col="#E41A1C", lty=2)
     }
   }
 
   ## Scale for s on the bottom left panel
   text(0,0,round(s.min,3),pos=1)
-  text(1/k,0,round(s.max,3),pos=1)
+  text(1/k2,0,round(s.max,3),pos=1)
   mtext(format(l.max,digits=3,scientific=TRUE), 2, at=0)
-  mtext(format(l.max,digits=3,scientific=TRUE), 2, at=1/k)
+  mtext(format(l.max,digits=3,scientific=TRUE), 2, at=1/k1)
   
   ## Draw a little panel for m
   m.range <- seq(round(m.hat*0.8,1), round(m.hat*1.2,1), length.out=grid)
@@ -167,10 +169,11 @@ plot.lattice.likelihoods <- function(fr, N, m=NULL, true.s=NULL, true.m=NULL, ex
 }
 
 ## Now plot, on a grid
-## f and est should be k*k*t matrices. paths is a k*k*t*n.paths matrix
+## f and est should be k1*k2*t matrices. paths is a k1*k2*t*n.paths matrix
 
 plot.wright.fisher.lattice.observations <- function(obs, f=NULL, est=NULL, paths=NULL, true.s=NULL, est.s=NULL, wd.x=0.002, error.bars=FALSE, scale.max=NULL, sd.colour.boxes=10, sd.est.s=NULL, brewerpal="RdYlGn", reversepal=FALSE, palsize=11, lighten=0.5, f.col="#4DAF4A", draw.scale=TRUE, ...){
-  k=dim(obs$N)[1]
+  k1=dim(obs$N)[1]
+  k2=dim(obs$N)[2]
   g=dim(obs$N)[3]
   
   ## draw grid
@@ -197,15 +200,15 @@ plot.wright.fisher.lattice.observations <- function(obs, f=NULL, est=NULL, paths
   
   pal.seq <- seq(scale[1], scale[2],length.out=n.pals+1)
   
-  for(i in 1:k){
-    for(j in 1:k){
+  for(i in 1:k1){
+    for(j in 1:k2){
 
       interval.col <- "#FFFFFF"
       if(!all(is.null(est.s))){         
         if(all(is.null(sd.est.s))){ #If we gave an estimate but no sd. 
           interval.col <- pal[findInterval(est.s[i,j], pal.seq, all.inside=TRUE)]
           interval.col <- inm.lighten.cols(interval.col, lighten)
-          rect((j-1)/k, (1-i/k), j/k, (1-(i-1)/k), col=interval.col)
+          rect((j-1)/k2, (1-i/k1), j/k2, (1-(i-1)/k1), col=interval.col)
         }else{                          #If we gave estimates with sd
           ns <- sd.colour.boxes
           ss <- matrix(rnorm(ns*ns,mean=est.s[i,j], sd=sd.est.s[i,j]),nrow=ns,ncol=ns)
@@ -213,56 +216,56 @@ plot.wright.fisher.lattice.observations <- function(obs, f=NULL, est=NULL, paths
             for(jj in 1:ns){
               interval.col <- pal[findInterval(ss[ii,jj], pal.seq, all.inside=TRUE)]
               interval.col <- inm.lighten.cols(interval.col, lighten)
-              rect((j-1)/k+(jj-1)/(k*ns), (1-i/k)+(ii-1)/(k*ns), (j-1)/k+(jj)/(k*ns), (1-i/k)+(ii)/(k*ns), col=interval.col, lwd=0, border=interval.col)
+              rect((j-1)/k2+(jj-1)/(k2*ns), (1-i/k1)+(ii-1)/(k1*ns), (j-1)/k2+(jj)/(k2*ns), (1-i/k1)+(ii)/(k1*ns), col=interval.col, lwd=0, border=interval.col)
             }
           }
-          rect((j-1)/k, (1-i/k), j/k, (1-(i-1)/k)) #Finally draw the border
+          rect((j-1)/k2, (1-i/k1), j/k2, (1-(i-1)/k1)) #Finally draw the border
         }
       }else{                         #if we gave no estimate just draw a white box
-        rect((j-1)/k, (1-i/k), j/k, (1-(i-1)/k), col=interval.col)
+        rect((j-1)/k2, (1-i/k1), j/k2, (1-(i-1)/k1), col=interval.col)
       }
 
       if(!is.null(paths)){
         for(l in 1:dim(paths)[4]){
           slice=paths[i,j,,l]
-          xpos=(j-1)/k+(1:(g))/((g)*k)
-          ypos=(1-i/k)+slice/k
+          xpos=(j-1)/k2+(1:(g))/((g)*k2)
+          ypos=(1-i/k1)+slice/k1
           lines(xpos, ypos, col= "grey", lwd=1)
         }
       }
       
       f.o <- obs$N.A[i,j,]/obs$N[i,j,]
-      xpos=(j-1)/k+(1:(g))/((g)*k)
-      ypos=(1-i/k)+f.o/k
+      xpos=(j-1)/k2+(1:(g))/((g)*k2)
+      ypos=(1-i/k1)+f.o/k1
 
       
-      points(xpos, ypos, col= "#377EBA", pch=16, cex=3/k)
+      points(xpos, ypos, col= "#377EBA", pch=16, cex=3/max(k1,k2))
       if(error.bars){
         sdo <- sqrt(f.o*(1-f.o)/obs$N[i,j,])
         real <- !is.na(sdo)
-        inm.gaussian.errorbars(xpos[real], ypos[real], sd.y=sdo[real]/k, y.lim=c(1-i/k, 1-(i-1)/k), wd.x=wd.x, white=c(col2rgb(interval.col)) )
+        inm.gaussian.errorbars(xpos[real], ypos[real], sd.y=sdo[real]/k1, y.lim=c(1-i/k1, 1-(i-1)/k1), wd.x=wd.x, white=c(col2rgb(interval.col)) )
         ## Overwrite a bit below with a white box, in case we run over
-        if(i==k){
-          rect((j-1)/k, -0.1, j/k, 0, col="white", border="white")
+        if(i==k1){
+          rect((j-1)/k2, -0.1, j/k2, 0, col="white", border="white")
         }
-        if(j==k){
-         rect(1, (1-i/k), j/k, 1.1, col="white", border="white")
+        if(j==k2){
+         rect(1, (1-i/k1), 1.1, j/k1, col="white", border="white")
         } 
         ## Redraw the borders in case we overwrote them with the error bars
-        rect((j-1)/k, (1-i/k), j/k, (1-(i-1)/k))
+        rect((j-1)/k2, (1-i/k1), j/k2, (1-(i-1)/k1))
       }
       
       if(!all(is.null(f))){
         slice=f[i,j,]
-        xpos=(j-1)/k+(1:(g))/((g)*k)
-        ypos=(1-i/k)+slice/k
+        xpos=(j-1)/k2+(1:(g))/((g)*k2)
+        ypos=(1-i/k1)+slice/k1
         lines(xpos, ypos, col= f.col, lwd=2)
       }
 
       if(!all(is.null(est))){
         slice=est[i,j,]
-        xpos=(j-1)/k+(1:(g))/((g)*k)
-        ypos=(1-i/k)+slice/k
+        xpos=(j-1)/k2+(1:(g))/((g)*k2)
+        ypos=(1-i/k1)+slice/k1
         lines(xpos, ypos, col= "#CC5500", lwd=2)
       }
 

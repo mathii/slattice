@@ -44,11 +44,12 @@ Ne <- 1000                               #N_e in each deme
 g<-100                                  #Number of generations
 p0 <- 0.1                               #Initial frequency
 s <- matrix(c(0.06, 0.02, -0.02, -0.06), 4, 4, byrow=FALSE) #S^{ij} - matrix of selection coefficients
-k <- 4                                                      #square root of number of demes
-m <- 0.04                                                   #Scaled migration rate
+k1 <- 4          #Number of rows of demes
+k2 <- 4          #Number of cols of demes
+m <- 0.04        #Scaled migration rate
 
 ## Simulate - note we need to give the absolute migration rate, only for the simulations. 
-lattice.data<-generate.lattice.observations(Ne, g, p0, s, k, Ne*m, missing.p=0.9, size.params=list(N=100, p=0.5))
+lattice.data<-generate.lattice.observations(Ne, g, p0, s, k1, k2, Ne*m, missing.p=0.9, size.params=list(N=100, p=0.5))
 
 Rprof("profile_lattice.out")
 t <- system.time(lattice.estimate<-estimate.s.m(lattice.data$obs, Ne, M=NULL, update="Soft EM", max.iters=10, initial.M=m))

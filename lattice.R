@@ -17,7 +17,7 @@
 ## Helper functions for the lattice model
 .mrm.store <- list()
 
-## Migration rates for grid size k
+## Migration rates for grid size k1 x k2
 mig.rate.mat <- function(k1, k2=k1){
   tag <- paste0(as.character(k1),",",as.character(k2))
   if(!is.null(.mrm.store[[tag]])){

@@ -180,9 +180,10 @@ wfhmm.lattice.emission <- function( N.A, N, f){
 wfhmm.lattice.transmission <- function(f.from, f.to, t, params){
   i <- params$i
   j <- params$j
+  k1 <- dim(params$est.f)[1]
+  k2 <- dim(params$est.f)[2]
   f.previous <- params$est.f[,,t]
-  k1 <- dim(f.previous)[1]
-  k2 <- dim(f.previous)[2]
+  if(is.null(dim(f.previous))){dim(f.previous) <- c(k1,k2)} #for k1/k2=1 case
   mrm <- mig.rate.mat(k1,k2)
   h <- params$h
 

@@ -469,7 +469,7 @@ s.m.estimate.em.lattice <- function( obs, Ne, M=NULL, h=0.5, update="Simple", to
     print(s.m$s)
     cat("\n")
   }
-  
+
   iter=1
   result <- list(log.likelihood=-Inf)
   old.result <- list(log.likelihood=-Inf)

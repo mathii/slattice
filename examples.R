@@ -42,20 +42,23 @@ par(mfrow=c(2,2))
 estimate <- estimate.s(data$obs, Ne, method="Soft EM", verbose=TRUE)
 cat(paste("Final s =", estimate$s, "\n\n"))
 
-## 2) Lattice case
+## 2) lattice case
 
 cat(paste(paste(rep("*", 20), collapse=""), " Starting lattice population example ", paste(rep("*", 20), collapse=""), "\n", sep="" ))
+
+## Change these to try out different grid shapes. 
+k1 <- 5                                  #Number of rows of demes
+k2 <- 3                                  #Number of cols of demes
 
 ## Parameters for simulatuon
 Ne <- 1000                               #N_e in each deme
 g<-100                                  #Number of generations
 p0 <- 0.1                               #Initial frequency
-s <- matrix(c(0.06, 0.02, -0.02, -0.06), 4, 4, byrow=FALSE) #S^{ij} - matrix of selection coefficients
-k <- 4                                                      #square root of number of demes
-m <- 0.04                                                   #Scaled migration rate
+s <- matrix(0.06*seq(1,-1,length.out=k1), k1, k2, byrow=FALSE) #S^{ij} - matrix of selection coefficients
+m <- 0.04                                #Scaled migration rate
 
 ## Simulate - note we need to give the absolute migration rate, only for the simulations. 
-lattice.data<-generate.lattice.observations(Ne, g, p0, s, k, Ne*m, missing.p=0.9, size.params=list(N=100, p=0.5))
+lattice.data<-generate.lattice.observations(Ne, g, p0, s, k1, k2, Ne*m, missing.p=0.9, size.params=list(N=100, p=0.5))
 
 ## Run EM estimator. Again, method selects differnt estimators.
 ## if you specify M to be non-null, that will be used as the fixed value
