@@ -48,7 +48,7 @@ cat(paste(paste(rep("*", 20), collapse=""), " Starting lattice population exampl
 
 ## Change these to try out different grid shapes. 
 k1 <- 5                                  #Number of rows of demes
-k2 <- 3                                  #Number of cols of demes
+k2 <- 3                                 #Number of cols of demes
 
 ## Parameters for simulatuon
 Ne <- 1000                               #N_e in each deme
