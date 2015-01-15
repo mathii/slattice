@@ -313,13 +313,13 @@ estimate.s <- function( obs, Ne, h=0.5, tol=0.001, max.iters=100, viterbi=TRUE, 
 ## the likelihood is less that pchisq(alpha) lower than the ML. Twice the difference in
 ## ll has a chisq 1 distribution
 
-find.confidence.interval <- function(obs, Ne, s.hat, alpha=0.05 , h=0.5, lower.range=-1, upper.range=1, tol=1e-4){
+find.confidence.interval <- function(obs, Ne, s.hat, alpha=0.05 , h=0.5, lower.range=s.hat-0.1, upper.range=s.hat+0.1, tol=1e-4){
   diff <- 0.5*qchisq(alpha,1,lower.tail=FALSE)
   max.ll <- wfhmm.call(obs, s.hat, Ne, h=h, viterbi=TRUE, paths=0, likelihood="Model")$log.likelihood
   p <- list(obs=obs, Ne=Ne, diff.ll=diff, max.ll=max.ll)
 
-  lower.ci <- uniroot(ci.objective, c(lower.range, s.hat), p, tol=tol)
-  upper.ci <- uniroot(ci.objective, c(s.hat, upper.range), p, tol=tol)
+  lower.ci <- uniroot(ci.objective, c(lower.range, s.hat), p, tol=tol, extendInt="downX")
+  upper.ci <- uniroot(ci.objective, c(s.hat, upper.range), p, tol=tol, extendInt="upX")
 
   return(c(lower.ci$root, upper.ci$root))
 }
