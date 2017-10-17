@@ -16,7 +16,6 @@
 
 ## Plotting in the  pop case
 
-source("inference.R")
 library(RColorBrewer)
 
 library(plotrix)

@@ -1,0 +1,73 @@
+---
+title: "Slattice"
+author: "Iain Mathieson"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```{r, include=FALSE}
+library(slattice)
+set.seed(12345)
+par(cex=0.5)
+```
+
+
+This vignette demonstrates how to use the slattice package to make inference about selection coefficients from time series data. This theory and implementation is described in the paper *Estimating Selection Coefficients in Spatially Structured Populations from Time Series Data of Allele Frequencies*, available [here](http://www.genetics.org/content/193/3/973)
+
+## Single population case
+
+First, simulate some data under a Wright-Fisher model using the `generate.observations` function: 
+
+```{r}
+Ne <- 1000                              #N_e
+g<-100                                  #Number of generations
+p0 <- 0.1                               #Initial freq
+s <- 0.05                               #Selection coefficient
+data<-generate.observations(Ne, g, p0, s, missing.p=0.8, size.params=list(N=100,p=0.5))
+```
+
+The data is a data frame with one row per generation, and two columns named `N` for the total number of chromosomes observed and `N.A` for the total number that carry the allele that is under selection. 
+
+```{r}
+head(data$obs)
+```
+
+Run the EM estimator using the default "Soft EM" algorithm. The output is an object that constains the estimated selection coefficient, and various other information including the posterior decoding of the frequency. Set `verbose=FALSE` to avoid seeing any output. 
+
+```{r, fig.show='hold'}
+estimate <- estimate.s(data$obs, Ne, method="Soft EM", verbose=TRUE)
+```
+
+```{r}
+estimate$s
+```
+
+## Lattice case
+
+Simulate data under the Wright-Fisher lattice model. 
+
+```{r}
+k1 <- 4                                  #Number of rows of demes
+k2 <- 3                                 #Number of cols of demes
+Ne <- 1000                               #N_e in each deme
+g<-100                                  #Number of generations
+p0 <- 0.1                               #Initial frequency
+s <- matrix(0.06*seq(1,-1,length.out=k1), k1, k2, byrow=FALSE) #S^{ij} - matrix of selection coefficients
+m <- 0.04                                #Scaled migration rate
+lattice.data<-generate.lattice.observations(Ne, g, p0, s, k1, k2, Ne*m, missing.p=0.9, size.params=list(N=100, p=0.5))
+```
+
+Now run the lattice EM estimator. The output includes the final estimates, as well as all the posterior decodings. Here we set `verbose=FALSE` to avoid plotting the intermediate steps. You do not need to specify `initial.M`, but the estimator seems to perform better if you do. 
+
+```{r}
+lattice.estimate<-estimate.s.m(lattice.data$obs, Ne, M=NULL, update="Soft EM", max.iters=10, verbose=FALSE, initial.M=m)
+```
+
+A nice way to plot the combined observations and results: 
+
+```{r, fig.show='hold', fig.width = 6, fig.height = 6}
+plot.wright.fisher.lattice.observations(lattice.data$obs, lattice.data$f, lattice.estimate$f, est.s=lattice.estimate$s, error.bars=TRUE, main="Lattice Example")
+```

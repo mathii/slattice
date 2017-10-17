@@ -17,8 +17,6 @@
 ## Functions for simulating selection in the lattice Wright-Fisher model
 ## and generating observations from the model.
 
-source("simulation.R")
-source("lattice.R")
 
 ## Simulate a wf population on a k1 by k2 grid with a fixed size n in each deme,
 ## initial allele frequency p0 and selection coefficient s - can be either k1 by k2

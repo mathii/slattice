@@ -1,0 +1,12 @@
+Package: slattice
+Title: Estimates selection coefficients in spatially structured data
+Version: 1.0
+Authors@R: person("Iain", "Mathieson", email = "iain.mathieson@cantab.net", role = c("aut", "cre"))
+Description: See Mathieson & McVean, Estimating Selection Coefficients in Spatially Structured Populations from Time Series Data of Allele Frequencies, Genetics, 2013, https://doi.org/10.1534/genetics.112.147611.
+Depends: plotrix, RColorBrewer
+License: Apache
+Encoding: UTF-8
+LazyData: true
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

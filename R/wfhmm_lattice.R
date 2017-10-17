@@ -18,9 +18,6 @@
 ## frequency increments from t to t+1 are independent, conditional
 ## on the frequency history up to t.
 
-source("wfhmm.R")
-source("lattice.R")
-
 ## Discretise and call the lattice viterbi algorithm
 
 wfhmm.lattice.call <- function(obs, s, M, Ne, estimated.f, h=0.5, viterbi=TRUE, paths=0, grid=100, extend=0.1, likelihood=TRUE, forward.backward=TRUE){

@@ -16,9 +16,6 @@
 
 ## plotting in the lattice case
 
-source("plotting.R")
-source("lattice.R")
-source("inference_lattice.R")
 
 ## Make a cute plot of the allele frequencies for the WF lattice model
 

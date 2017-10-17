@@ -17,9 +17,6 @@
 ## Inference in the lattice model, both exact and using the hmm
 ## includes general wrapper functions.
 
-source("wfhmm_lattice.R")
-source("lattice.R")
-
 EPSILON <- 10e-100                       #Used as a minimum value in some calculations
 
 ## Approximate lattice likelihood, as a function of s and m

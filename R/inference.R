@@ -17,8 +17,6 @@
 ## Inference in the one population model, both exact and using the hmm
 ## includes general wrapper functions.
 
-source("wfhmm.R")
-
 ## MLE for first order approximation...
 ## with haploid (or genic selection)
 approx.MLE.haploid <- function(f){
