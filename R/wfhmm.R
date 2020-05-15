@@ -23,25 +23,29 @@
 wfhmm.call <- function(obs, s, Ne, h=0.5, grid=100, extend=0.1, viterbi=TRUE, forward.backward=FALSE, paths=0, transitions="normal", likelihood="Model"){
   transition.func <- switch(transitions, normal=wfhmm.transition, binomial=wfhmm.transition.binomial, poisson=wfhmm.transition.poisson, NULL)
   if(is.null(transition.func)){stop("Unknown transition func")}
-
-  obs.f <- obs$N.A/obs$N
-  f.max <- min(1,extend+max(obs.f, na.rm=TRUE))
-  f.min <- max(0,min(obs.f-extend, na.rm=TRUE))
-
-  if(length(grid)==1){                  #If a single number, use as the length of the grid, otherwise, use the actual points
-    disc.f <- seq(f.min, f.max, length.out=grid)
-    interval <- (f.max-f.min)/(grid-1)
-  }
-  else{
-    disc.f <- grid
-    interval <- grid[2]-grid[1]         #Assuming you are evenly spaced. 
-  }
   
-  params <- list(Ne=Ne, s=s, obs=obs, interval=interval, states=disc.f, h=h)
+  obs.f <- obs$N.A/obs$N
+  
+  ## f.max <- min(1,extend+max(obs.f, na.rm=TRUE))
+  ## f.min <- max(0,min(obs.f-extend, na.rm=TRUE))
+
+  ## if(length(grid)==1){                  #If a single number, use as the length of the grid, otherwise, use the actual points
+  ##   disc.f <- seq(f.min, f.max, length.out=grid)
+  ##   interval <- (f.max-f.min)/(grid-1)
+  ## }
+  ## else{
+  ##   disc.f <- grid
+  ##   interval <- grid[2]-grid[1]         #Assuming you are evenly spaced. 
+  ## }
+  
+  ## params <- list(Ne=Ne, s=s, obs=obs, interval=interval, states=disc.f, h=h)
+  params <- wfhmm.setup.params(obs, grid, Ne, s, h, extend)
   
   results=list(params=params)
   results$transition.func <- transition.func
   results$emission.func <- wfhmm.emission
+
+  disc.f <- params$states
   
   if(viterbi){
     path <- wfhmm.viterbi(disc.f, obs.f, wfhmm.emission, transition.func, params )
@@ -65,6 +69,26 @@ wfhmm.call <- function(obs, s, Ne, h=0.5, grid=100, extend=0.1, viterbi=TRUE, fo
   
   return(results)
 }
+
+## Set up parameters for hmm
+wfhmm.setup.params <- function(obs, grid, Ne, s, h, extend){
+  obs.f <- obs$N.A/obs$N
+  f.max <- min(1,extend+max(obs.f, na.rm=TRUE))
+  f.min <- max(0,min(obs.f-extend, na.rm=TRUE))
+
+  if(length(grid)==1){#If a single number, use as the length of the grid, otherwise, use the actual points
+    disc.f <- seq(f.min, f.max, length.out=grid)
+    interval <- (f.max-f.min)/(grid-1)
+  }
+  else{
+    disc.f <- grid
+    interval <- grid[2]-grid[1]  #Assuming you are evenly spaced. 
+  }
+  
+  params <- list(Ne=Ne, s=s, obs=obs, interval=interval, states=disc.f, h=h)
+  return(params)
+}
+
 
 ## Find the Viterbi path through discretised frequency space.
 
