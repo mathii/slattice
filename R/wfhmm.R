@@ -85,7 +85,7 @@ wfhmm.setup.params <- function(obs, grid, Ne, s, h, extend){
     interval <- grid[2]-grid[1]  #Assuming you are evenly spaced. 
   }
   
-  params <- list(Ne=Ne, s=s, obs=obs, interval=interval, states=disc.f, h=h)
+  params <- list(Ne=Ne, s=s, obs=obs, interval=interval, states=disc.f, h=h, grid=grid)
   return(params)
 }
 
