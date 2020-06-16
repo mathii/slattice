@@ -535,8 +535,63 @@ estimate.s.m <- function( obs, Ne, M=NULL, h=0.5, update="Simple", tol=0.001, ma
   }
   
   if(final.ll|verbose){
-    hmm.solved <- wfhmm.lattice.call(obs, est$s, est$M, Ne, est$f, h=h, viterbi=TRUE, grid=grid)
+    hmm.solved <- wfhmm.lattice.call(obs, est$s, est$M, Ne, est$f, h=h, viterbi=TRUE, grid=grid, forward.backward=TRUE)
     est$log.likelihood <- hmm.solved$log.likelihood
+    est$call <- hmm.solved
   }
   return(est)
+}
+
+## Find confidence interval - compute a confidence interval by solving to find where
+## the likelihood is less that pchisq(alpha) lower than the ML. Twice the difference in
+## ll has a chisq 1 distribution. Just marginal so under-conservative
+## res is the result of a call to estimate.s.m()
+find.confidence.interval.lattice <- function(res, alpha=0.05, lower.range=res$s-0.1, upper.range=res$s+0.1, tol=1e-4){
+    diff <- 0.5*qchisq(alpha,1,lower.tail=FALSE)
+
+    obs <- res$call$params$obs
+    Ne <- res$call$params$Ne
+    M <- res$M
+    s.hat <- res$s
+    h <- res$call$params$h
+    f <- res$f
+    grid <- res$call$params$grid
+    
+    max.ll <- wfhmm.lattice.call(obs, s.hat, M, Ne, f, h=h, viterbi=TRUE,
+                                 grid=grid, paths=0, likelihood=TRUE)$log.likelihood
+
+    lower.ci <- s.hat*0
+    upper.ci <- s.hat*0
+
+    k1 <- dim(s.hat)[1]
+    k2 <- dim(s.hat)[2]
+
+    for(i1 in 1:k1){
+        for(i2 in 1:k2){
+            cat(paste0(i1, " ", i2, "\n"))
+            p <- list(obs=obs, Ne=Ne, diff.ll=diff, max.ll=max.ll, grid=grid,
+                      s.hat=s.hat, i1=i1, i2=i2, M=M, f=f, h=h)
+
+            lci <- uniroot(ci.objective.lattice,
+                                c(lower.range[i1,i2], s.hat[i1,i2]),
+                                p, tol=tol, extendInt="downX")
+            uci <- uniroot(ci.objective.lattice,
+                                c(s.hat[i1,i2], upper.range[i1,i2]),
+                                p, tol=tol, extendInt="upX")
+
+            lower.ci[i1,i2] <- lci$root
+            upper.ci[i1,i2] <- uci$root
+        }
+    }
+          
+    return(list(lower=lower.ci, upper=upper.ci))
+}
+
+## objective function for the likelihood
+
+ci.objective.lattice <- function(s, p){
+    s.val <- p$s.hat
+    s.val[p$i1,p$i2] <- s
+    solve <- wfhmm.lattice.call(p$obs, s.val, p$M, p$Ne, p$f, h=p$h, viterbi=FALSE, grid=grid, forward.backward=TRUE, paths=0, likelihood=TRUE)
+    return(p$max.ll-solve$log.likelihood-p$diff.ll)
 }

@@ -25,6 +25,10 @@ wfhmm.call <- function(obs, s, Ne, h=0.5, grid=100, extend=0.1, viterbi=TRUE, fo
   if(is.null(transition.func)){stop("Unknown transition func")}
   
   obs.f <- obs$N.A/obs$N
+
+  if(!(length(Ne)==1|length(Ne)==length(obs.f))){
+      stop("Ne must be a constant or the same length as the observations")
+  }
   
   ## f.max <- min(1,extend+max(obs.f, na.rm=TRUE))
   ## f.min <- max(0,min(obs.f-extend, na.rm=TRUE))
@@ -238,20 +242,31 @@ wfhmm.emission <- function( N.A, N, f){
 ## of going from f.from to somewhere in the range (f.to.lower,f.to.upper)
 
 wfhmm.transition <- function( f.from, f.to, t, params){
-  s <- params$s
-  Ne <- params$Ne
-  int <- params$interval/2
-  h <- params$h
-  mu <- f.from+2*s*f.from*(1-f.from)*(f.from+h*(1-2*f.from))
-  si <- sqrt(f.from*(1-f.from)/Ne)
-  return(pnorm(f.to+int,mu,si)-pnorm(f.to-int,mu,si))
+    if(length(params$Ne)==1){
+        Ne <- params$Ne
+    }else{
+        Ne <- params$Ne[t]
+    }
+
+    s <- params$s
+    int <- params$interval/2
+    h <- params$h
+    mu <- f.from+2*s*f.from*(1-f.from)*(f.from+h*(1-2*f.from))
+    si <- sqrt(f.from*(1-f.from)/Ne)
+    return(pnorm(f.to+int,mu,si)-pnorm(f.to-int,mu,si))
 }
 
 ## Poission transition func
 
 wfhmm.transition.poisson <- function(f.from, f.to, t, params){
-  s <- params$s
-  Ne <- params$Ne
+    s <- params$s
+    
+    if(length(params$Ne)==1){
+        Ne <- params$Ne
+    }else{
+        Ne <- params$Ne[t]
+    }
+
   h <- params$h
   lambda <- Ne* f.from+2*s*f.from*(1-f.from)*(f.from+h*(1-2*f.from))
   int <- params$interval/2
@@ -262,7 +277,14 @@ wfhmm.transition.poisson <- function(f.from, f.to, t, params){
 
 wfhmm.transition.binomial <- function(f.from, f.to, t, params){
   s <- params$s
-  Ne <- params$Ne
+
+  if(length(params$Ne)==1){
+        Ne <- params$Ne
+    }else{
+        Ne <- params$Ne[t]
+    }
+
+  
   int <- params$interval/2
   if(params$h!=0.5){stop("exact transition only supported for h=0.5")}
   p <- pmin(pmax(0,f.from*(1+s)/(1+f.from*s)),1) #can't go outside [0,1]...

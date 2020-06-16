@@ -29,7 +29,10 @@ wfhmm.lattice.call <- function(obs, s, M, Ne, estimated.f, h=0.5, viterbi=TRUE, 
   f.min <- max(0,min(obs.f-extend, na.rm=TRUE))
   disc.f <- seq(f.min, f.max, length.out=grid)
   interval <- (f.max-f.min)/(grid-1)
-  params <- list(s=s, M=M, Ne=Ne, interval=interval, obs=obs, est.f=estimated.f, h=h, states=disc.f)
+  if(!(length(Ne)==1|length(Ne)==g)){
+      stop("Ne must be a constant or the same length as the observations")
+  }
+  params <- list(s=s, M=M, Ne=Ne, interval=interval, obs=obs, est.f=estimated.f, h=h, states=disc.f, grid=grid)
   
   results <- list()
   if(viterbi){
@@ -180,12 +183,19 @@ wfhmm.lattice.transmission <- function(f.from, f.to, t, params){
   k1 <- dim(params$est.f)[1]
   k2 <- dim(params$est.f)[2]
   f.previous <- params$est.f[,,t]
+
+  if(length(params$Ne)==1){
+      Ne <- params$Ne
+  }else{
+      Ne <- params$Ne[t]
+  }
+  
   if(is.null(dim(f.previous))){dim(f.previous) <- c(k1,k2)} #for k1/k2=1 case
   mrm <- mig.rate.mat(k1,k2)
   h <- params$h
 
   mu <- (1-mrm[i,j]*params$M)*f.from+2*params$s[i,j]*f.from*(1-f.from)*(f.from+h*(1-2*f.from))
-  sig <- f.from*(1-f.from)/params$Ne
+  sig <- f.from*(1-f.from)/Ne
 
   if(i<k1){
     f.add <- f.previous[i+1,j]

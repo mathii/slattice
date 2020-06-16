@@ -199,12 +199,16 @@ s.estimate.hard.em <- function( obs, Ne, h=0.5, tol=0.001, max.iters=100, verbos
 ## Estimate s using a soft em estimator - so the estimator is averaged
 ## over the posterior distribution of frequencies.
 
-s.estimate.soft.em <-  function( obs, Ne, h=0.5, tol=0.001, max.iters=100, verbose=FALSE, params=list() ){
+s.estimate.soft.em <-  function( obs, Ne, h=0.5, tol=0.001, max.iters=100, verbose=FALSE, params=list(), initial.s=NA ){
   if(is.null(params$transitions)){params$transitions <- "normal"}
   if(is.null(params$grid)){params$grid <- 100}
 
   ## Get an inital estimate of s from the observed frequencies.
-  s <- s.estimate.simple(obs, Ne, h=h)$s
+  s <- initial.s
+  if(is.na(initial.s)){
+      s <- s.estimate.simple(obs, Ne, h=h)$s
+  }
+  
   s.old <- s+2*tol
  
   iter.values <- c(s)
