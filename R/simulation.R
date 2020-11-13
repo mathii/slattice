@@ -146,3 +146,29 @@ write.simulation.log <- function(root="./", simdata=list()){
   cat(paste("R Version:", R.version.string,"\n"), file=logfile, append=TRUE)
   cat(paste(c( "git log -1:", system("git log -1", intern=TRUE)), collapse="\n"), file=logfile, append=TRUE)
 }
+
+## Simulate a wf population of fixed size n for g
+## generations, with initial allele frequency p0 and
+## selection coefficients s1 and s2 and changepoints 
+
+simulate.wright.fisher.change <- function(n, g, p0, s1, s2, chg.pts){
+        if(length(chg.pts)==0){
+            return(simulate.wright.fisher(n, g, p0, s1))
+        }
+        else if(length(chg.pts>0) & max(chg.pts)<g){
+            current.generation <- 1
+            selcos <- rep(c(s1,s2), length.out=length(chg.pts)+1)
+            epochs <- diff(c(0,chg.pts, g))
+            frequency <- c()
+            ft <- p0
+            for(i in 1:length(epochs)){
+                this <- simulate.wright.fisher(n, epochs[i], ft , selcos[i])
+                frequency <- c(frequency, this)
+                ft <- rev(frequency)[1]
+            }
+            return(frequency)
+        }
+        else{
+            stop("length of chgpts must be >0 and max <g")
+        }
+}

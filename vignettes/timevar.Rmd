@@ -1,0 +1,62 @@
+---
+title: "Time Varying"
+author: "Iain Mathieson"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Time Varying}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```{r, include=FALSE}
+library(slattice)
+```
+
+This vignette demonstrates how to use the slattice package to make inference about time-varyin selection coefficients from time series data. This theory and implementation is described in the paper *Estimating time-varying selection coefficients from time series data of allele frequencies*, available [here](TBD). This example just runs scenario 1.
+
+```{r}
+set.seed(123456)
+s.true <- 0.02 #Selection coefficient
+f0=0.1 #initial frequency
+sample.size <- 100 #number of chromosomes samples
+sample.gens <- 10 #frequency of sampling (generations)
+gens <- 100 #Number of generations
+states <- 2 #Number of selection states
+Ne<-1000 #Effective population size
+initial.s<-c(-0.05,0.05) #Initial guess for selection coefficient
+
+#Simulate allele freqeuncy trajectory and generate observations 
+f<-simulate.wright.fisher.change(Ne, 100, f0, s.true, -s.true, c(50))
+obs.pts <- rep(c(sample.size, rep(0,sample.gens-1)), times=gens/sample.gens)
+obs.pts[gens] <- sample.size
+obs <- generate.observations.from.path(f, obs.pts)
+```
+Now run the inference. obs is a data frame with one column "N" giving the number of observations in each generation (can be zero) and one column "N.A" giving the number of selected alleles observed.
+```{r}
+#Run inference
+res.s<-s.estimate.soft.em.s2d(obs, Ne, initial.s, tol=0.001, verbose=FALSE, viterbi=TRUE)
+#Obtain posterior mode of the allele frequency trajectory 
+est.f <- res.s$call$params$states[apply(res.s$call$fb$f.fb, 2, which.max)]
+est.s <- apply(res.s$call$fb$s.fb, 2, which.max)
+```
+The output is a list containing: 
+
+* s: the selection coefficient(s)
+* call: the output of the last iteration of the algorithm, including: 
+  * call\$s.fb: The posterior decoding of the selection state(s)
+  * call\$f.fb: The posterior decoding of the allele frequency
+  * call\$s.viterbi: The viterbi path of the selection states
+  * call\$viterbi: The viterbi path of the allele frequency
+  * call\$log.likelihood: The log-likelihood of the model
+
+```{r fig.width=6, fig.height=6}
+cols<-c("#00BFC4", "#F8766D")
+g<-gens
+plot(obs$N.A/obs$N, pch=16, bty="n", ylab="Frequency", xlab="Generation", ylim=c(0.05, 0.5))
+segments(1:(g-1), f[1:(g-1)], 2:g, f[2:g], col=cols[rep(c(2,1),each=50)], lwd=2)
+segments(1:(g-1), est.f[1:(g-1)], 2:g, est.f[2:g], col="black", lwd=2, lty=1)
+segments(1:(g-1), est.f[1:(g-1)], 2:g, est.f[2:g], col=cols[est.s], lwd=2, lty=3)
+segments(1:(g-1), res.s$call$viterbi[1:(g-1)], 2:g, res.s$call$viterbi[2:g], col=cols[res.s$call$s.viterbi], lwd=2, lty=3)
+legend("topleft", c("True", "Posterior mode", "Viterbi", "Observed"), lwd=c(2,2,2,NA), lty=c(1,3,3,NA), pch=c(NA, NA, NA, 16), col=c(1, 1, 1, 1), bty="n")
+```
+
